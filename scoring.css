@@ -1,0 +1,1481 @@
+/* ==========================================================================
+   臺灣正體中文 識字比賽 - 現場評審與主辦單位評分系統
+   專用樣式表 (scoring.css)
+   ========================================================================== */
+
+:root {
+  --primary: #1e40af;
+  --primary-light: #3b82f6;
+  --primary-dark: #1e3a8a;
+  --ai-purple: #7c3aed;
+  --ai-purple-light: #a855f7;
+  --ai-bg: #f5f3ff;
+  --ai-border: #ddd6fe;
+  --success: #059669;
+  --success-bg: #ecfdf5;
+  --warning: #d97706;
+  --warning-bg: #fffbeb;
+  --danger: #dc2626;
+  --danger-bg: #fef2f2;
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --gray-800: #1e293b;
+  --gray-900: #0f172a;
+  
+  --font-system: -apple-system, BlinkMacSystemFont, "Microsoft JhengHei", "微軟正黑體", "Segoe UI", Roboto, sans-serif;
+  --font-kai: "IansuiLocal", "Iansui", "BiauKai", "DFKai-SB", "TW-Kai", "Kaiti TC", serif;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 16px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-system);
+  background-color: #f8fafc;
+  color: var(--gray-800);
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 頂部全域導覽列 */
+.global-header {
+  background: #ffffff;
+  border-bottom: 1px solid var(--gray-200);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
+
+.brand-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-area h1 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  letter-spacing: -0.02em;
+}
+
+.brand-badge {
+  background: var(--primary-dark);
+  color: #fff;
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  font-weight: 600;
+}
+
+.header-user-status {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* 雲端即時同步指示器 */
+.cloud-conn-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: var(--gray-100);
+  border: 1px solid var(--gray-300);
+  color: var(--gray-700);
+  transition: all 0.2s;
+}
+
+.cloud-conn-pill.online {
+  background: #f0fdf4;
+  border-color: #86efac;
+  color: #15803d;
+}
+
+.conn-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #94a3b8;
+  display: inline-block;
+}
+
+.conn-dot.online {
+  background: #16a34a;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
+  animation: pulse-dot 2s infinite;
+}
+
+.conn-dot.offline {
+  background: #f59e0b;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.75; }
+}
+
+.btn-cloud-settings {
+  border: none;
+  background: none;
+  color: #2563eb;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.btn-cloud-settings:hover {
+  background: rgba(37, 99, 235, 0.1);
+}
+
+.user-role-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  background: var(--gray-100);
+  color: var(--gray-700);
+  border: 1px solid var(--gray-200);
+}
+
+.user-role-pill.judge {
+  background: #eff6ff;
+  color: var(--primary);
+  border-color: #bfdbfe;
+}
+
+.user-role-pill.organizer {
+  background: #fdf4ff;
+  color: #9333ea;
+  border-color: #f5d0fe;
+}
+
+.btn-header {
+  background: #fff;
+  border: 1px solid var(--gray-300);
+  color: var(--gray-700);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.btn-header:hover {
+  background: var(--gray-50);
+  border-color: var(--gray-400);
+  color: var(--gray-900);
+}
+
+.btn-header.primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.btn-header.primary:hover {
+  background: var(--primary-dark);
+}
+
+/* 主畫面容器 */
+.main-wrapper {
+  flex: 1;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
+
+/* ================= 1. 登入介面視圖 ================= */
+.auth-container {
+  max-width: 720px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--gray-200);
+  overflow: hidden;
+}
+
+.auth-header-hero {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #4f46e5 100%);
+  color: #fff;
+  padding: 36px 32px;
+  text-align: center;
+}
+
+.auth-header-hero h2 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.auth-header-hero p {
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
+.auth-tabs-nav {
+  display: flex;
+  border-bottom: 1px solid var(--gray-200);
+  background: var(--gray-50);
+}
+
+.auth-tab-btn {
+  flex: 1;
+  padding: 16px;
+  border: none;
+  background: none;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gray-600);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+  border-bottom: 3px solid transparent;
+}
+
+.auth-tab-btn.active {
+  color: var(--primary);
+  background: #fff;
+  border-bottom-color: var(--primary);
+}
+
+.auth-tab-pane {
+  padding: 32px;
+  display: none;
+}
+
+.auth-tab-pane.active {
+  display: block;
+}
+
+.judge-card-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.judge-card-opt {
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #fff;
+}
+
+.judge-card-opt:hover {
+  border-color: var(--primary-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.judge-card-opt.selected {
+  border-color: var(--primary);
+  background: #eff6ff;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.judge-card-opt .judge-avatar {
+  font-size: 2rem;
+  margin-bottom: 6px;
+}
+
+.judge-card-opt .judge-title {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--gray-900);
+}
+
+.judge-card-opt .judge-sub {
+  font-size: 0.8rem;
+  color: var(--gray-600);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-bottom: 6px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  color: var(--gray-800);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.btn-block-action {
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--radius);
+  border: none;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn-block-action:hover {
+  background: var(--primary-dark);
+}
+
+.btn-block-action.organizer {
+  background: #7c3aed;
+}
+
+.btn-block-action.organizer:hover {
+  background: #6d28d9;
+}
+
+/* ================= 2. 現場評審介面視圖 ================= */
+.judge-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 頂部操控列：Level 切換與進度 */
+.judge-top-controls {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  border: 1px solid var(--gray-200);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.level-switcher-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.level-tag-label {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--gray-700);
+  margin-right: 4px;
+}
+
+.level-btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--gray-300);
+  background: #fff;
+  color: var(--gray-700);
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.level-btn:hover {
+  background: var(--gray-100);
+  border-color: var(--gray-400);
+}
+
+.level-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(30, 64, 175, 0.2);
+}
+
+.student-quick-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 0;
+  max-width: 100%;
+}
+
+.student-badge-btn {
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--gray-300);
+  background: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+
+.student-badge-btn:hover {
+  border-color: var(--primary-light);
+  background: var(--gray-50);
+}
+
+.student-badge-btn.active {
+  border-color: var(--primary);
+  background: #eff6ff;
+  color: var(--primary-dark);
+  font-weight: 700;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+}
+
+.student-badge-btn.done {
+  border-color: #a7f3d0;
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.student-badge-btn.done::after {
+  content: '✓';
+  font-weight: 800;
+  color: #059669;
+}
+
+/* 核心評分區域：兩欄排版 (左側學生與評分，右側 AI 雙盲比對) */
+.judge-scoring-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .judge-scoring-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 學生核對與初評卡片 */
+.student-scoring-card {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-200);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.student-identity-banner {
+  background: linear-gradient(to right, #f8fafc, #edf2f7);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.student-info-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.student-num-box {
+  background: var(--primary-dark);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 8px 16px;
+  text-align: center;
+}
+
+.student-num-box .num-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.student-num-box .num-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.student-details h2 {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--gray-900);
+  font-family: var(--font-kai);
+  letter-spacing: 0.05em;
+}
+
+.student-details .meta {
+  font-size: 0.9rem;
+  color: var(--gray-600);
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.student-nav-arrows {
+  display: flex;
+  gap: 8px;
+}
+
+.nav-arrow-btn {
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--gray-300);
+  background: #fff;
+  color: var(--gray-700);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+}
+
+.nav-arrow-btn:hover:not(:disabled) {
+  background: var(--gray-100);
+  border-color: var(--gray-400);
+}
+
+.nav-arrow-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* 評分表單項目 */
+.scoring-rubrics-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid var(--gray-200);
+  padding-bottom: 8px;
+}
+
+.scoring-rubrics-title h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rubric-item {
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 16px;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.rubric-item.has-error {
+  border-color: var(--danger) !important;
+  background: #fef2f2 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2) !important;
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+
+.rubric-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.rubric-title-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.rubric-name {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--gray-900);
+}
+
+.rubric-max-badge {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--gray-600);
+  background: var(--gray-200);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.rubric-score-display {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--primary-dark);
+}
+
+.rubric-desc {
+  font-size: 0.83rem;
+  color: var(--gray-600);
+  margin-bottom: 12px;
+}
+
+.rubric-input-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.quick-score-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.score-chip-btn {
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--gray-300);
+  background: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.score-chip-btn:hover {
+  background: var(--gray-100);
+  border-color: var(--primary-light);
+}
+
+.score-chip-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.score-input-number {
+  width: 90px;
+  padding: 8px 10px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-align: center;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  color: var(--gray-900);
+}
+
+.score-input-number:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.rubric-error-msg {
+  color: var(--danger);
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 6px;
+  display: none;
+}
+
+.rubric-item.has-error .rubric-error-msg {
+  display: block;
+}
+
+/* 總分小計欄 */
+.scoring-total-bar {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.total-bar-label {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--primary-dark);
+}
+
+.total-bar-score {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+/* 備註填寫 */
+.form-comment {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.88rem;
+  resize: vertical;
+}
+
+/* 初評儲存與 AI 解鎖按鈕區 */
+.human-action-bar {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-save-initial {
+  flex: 1;
+  padding: 14px;
+  border-radius: var(--radius);
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: var(--shadow);
+  transition: all 0.2s;
+}
+
+.btn-save-initial:hover {
+  background: var(--primary-dark);
+}
+
+.btn-save-initial.saved {
+  background: var(--success);
+}
+
+/* ================= 3. AI 雙盲與比對卡片 ================= */
+.ai-comparison-card {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-200);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-height: 480px;
+}
+
+.ai-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--ai-border);
+}
+
+.ai-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--ai-purple);
+}
+
+.ai-model-tag {
+  font-size: 0.75rem;
+  background: var(--ai-bg);
+  border: 1px solid var(--ai-border);
+  color: var(--ai-purple);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-weight: 600;
+}
+
+/* 雙盲遮蔽層 (未完成初評前鎖定) */
+.ai-locked-overlay {
+  position: absolute;
+  top: 70px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(5px);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  text-align: center;
+  z-index: 20;
+}
+
+.ai-lock-icon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+  color: var(--ai-purple);
+}
+
+.ai-locked-overlay h4 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--gray-900);
+  margin-bottom: 8px;
+}
+
+.ai-locked-overlay p {
+  font-size: 0.9rem;
+  color: var(--gray-600);
+  max-width: 320px;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.ai-unlock-hint {
+  font-size: 0.8rem;
+  background: var(--warning-bg);
+  color: var(--warning);
+  border: 1px solid #fde68a;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+
+/* 解鎖後 AI 詳細面板 */
+.ai-unlocked-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+.ai-score-hero {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  border: 1px solid var(--ai-border);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ai-score-big {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.ai-score-big .num {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--ai-purple);
+}
+
+.ai-score-big .max {
+  font-size: 0.95rem;
+  color: var(--gray-600);
+}
+
+.ai-subscores-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.ai-sub-card {
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+
+.ai-sub-card .sub-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--gray-600);
+}
+
+.ai-sub-card .sub-val {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-top: 2px;
+}
+
+.ai-analysis-box {
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 12px;
+  font-size: 0.88rem;
+  color: var(--gray-700);
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.ai-analysis-box h5 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 6px;
+}
+
+.ai-error-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.ai-error-tag {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  font-size: 0.78rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+/* 評審比對與修改決策欄 */
+.judge-revision-panel {
+  background: #fff;
+  border: 2px solid var(--primary-light);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-top: auto;
+}
+
+.revision-header {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.revision-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-keep-original {
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--success);
+  background: var(--success);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-keep-original:hover {
+  background: #047857;
+}
+
+.btn-modify-score {
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--primary);
+  background: #fff;
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-modify-score:hover {
+  background: #eff6ff;
+}
+
+.btn-next-student-direct {
+  margin-top: 4px;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--gray-900);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-next-student-direct:hover {
+  background: #1e293b;
+}
+
+/* ================= 4. 主辦單位後台視圖 (Organizer Dashboard) ================= */
+.organizer-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 主辦單位頂部工具卡 */
+.organizer-control-card {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-200);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.org-card-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.org-card-title h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--gray-900);
+}
+
+.org-card-title p {
+  font-size: 0.9rem;
+  color: var(--gray-600);
+}
+
+/* 核心開關：不納入 AI 評分切換器 */
+.ai-inclusion-toggle-box {
+  background: var(--ai-bg);
+  border: 2px solid var(--ai-border);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.toggle-info-title {
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--ai-purple);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toggle-info-desc {
+  font-size: 0.85rem;
+  color: var(--gray-700);
+  margin-top: 2px;
+}
+
+.switch-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.switch-checkbox {
+  position: relative;
+  width: 52px;
+  height: 28px;
+  appearance: none;
+  background-color: #cbd5e1;
+  outline: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background-color 0.25s;
+}
+
+.switch-checkbox:checked {
+  background-color: var(--danger);
+}
+
+.switch-checkbox::before {
+  content: '';
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.25s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.switch-checkbox:checked::before {
+  transform: translateX(24px);
+}
+
+.switch-state-text {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--gray-900);
+}
+
+/* 快速過濾與操作列 */
+.org-filter-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--gray-200);
+}
+
+.org-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.org-btn-group {
+  display: flex;
+  gap: 8px;
+}
+
+/* 全場大表 (Score Matrix Table) */
+.table-card {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-200);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.score-matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.92rem;
+}
+
+.score-matrix-table th {
+  background: var(--gray-100);
+  color: var(--gray-700);
+  font-weight: 700;
+  padding: 14px 16px;
+  border-bottom: 2px solid var(--gray-200);
+  white-space: nowrap;
+}
+
+.score-matrix-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--gray-200);
+  color: var(--gray-800);
+  vertical-align: middle;
+}
+
+.score-matrix-table tr:hover {
+  background: #f8fafc;
+}
+
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 0.85rem;
+  background: var(--gray-200);
+  color: var(--gray-700);
+}
+
+.rank-badge.rank-1 {
+  background: #fef08a;
+  color: #854d0e;
+  border: 1px solid #fde047;
+}
+
+.rank-badge.rank-2 {
+  background: #e2e8f0;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.rank-badge.rank-3 {
+  background: #fed7aa;
+  color: #9a3412;
+  border: 1px solid #fdba74;
+}
+
+.cell-student-name {
+  font-family: var(--font-kai);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.score-badge {
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--gray-100);
+}
+
+.score-badge.ai-score {
+  background: var(--ai-bg);
+  color: var(--ai-purple);
+  border: 1px solid var(--ai-border);
+}
+
+.score-badge.ai-score.excluded {
+  background: var(--gray-100);
+  color: var(--gray-400);
+  border-color: var(--gray-200);
+  text-decoration: line-through;
+}
+
+.score-badge.final-total {
+  font-size: 1.1rem;
+  background: #eff6ff;
+  color: var(--primary);
+  border: 1px solid #bfdbfe;
+}
+
+/* ================= 5. 防漏填提醒彈窗 (Alert Modal) ================= */
+.modal-alert-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.modal-alert-backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-alert-dialog {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  max-width: 480px;
+  width: 100%;
+  padding: 28px;
+  text-align: center;
+  transform: scale(0.95);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid var(--gray-200);
+}
+
+.modal-alert-backdrop.show .modal-alert-dialog {
+  transform: scale(1);
+}
+
+.alert-icon-ring {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #fef2f2;
+  border: 3px solid #fee2e2;
+  color: var(--danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin: 0 auto 16px;
+}
+
+.modal-alert-dialog h3 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--gray-900);
+  margin-bottom: 8px;
+}
+
+.modal-alert-dialog p {
+  font-size: 0.95rem;
+  color: var(--gray-600);
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.missing-field-tag {
+  background: #fef2f2;
+  color: var(--danger);
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid #fecaca;
+}
+
+.alert-dialog-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-alert-fill {
+  flex: 1;
+  padding: 12px;
+  border-radius: var(--radius);
+  border: none;
+  background: var(--danger);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-alert-fill:hover {
+  background: #b91c1c;
+}
+
+/* 浮動提示 Toast */
+.scoring-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--gray-900);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  font-size: 0.9rem;
+  font-weight: 600;
+  z-index: 1000;
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.scoring-toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* 響應式微調 */
+@media (max-width: 768px) {
+  .global-header {
+    padding: 0 16px;
+  }
+  .brand-area h1 {
+    font-size: 1rem;
+  }
+  .student-identity-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .student-nav-arrows {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .rubric-input-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

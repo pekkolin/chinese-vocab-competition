@@ -42,6 +42,11 @@
       <button type="button" class="nav-btn primary" id="openSettingsBtn" title="開啟比賽標題與題庫設定">
         <span>⚙️</span> 設定與題庫
       </button>
+
+      <!-- 現場評審與主辦計分系統按鈕 -->
+      <a href="scoring.html" class="nav-btn" title="開啟現場評審打分與主辦單位計分系統" style="background: #1e40af; color: #ffffff; text-decoration: none; border-color: #1e3a8a; font-weight: 700;">
+        <span>🧑‍⚖️</span> 評審評分系統
+      </a>
     </div>
   </header>
 
@@ -370,6 +375,7 @@
       <div class="modal-tabs">
         <button type="button" class="tab-btn active" data-tab="tab-general">比賽設定</button>
         <button type="button" class="tab-btn" data-tab="tab-ai">🎙️ AI 評分設定</button>
+        <button type="button" class="tab-btn" data-tab="tab-cloud">🔥 雲端同步</button>
         <button type="button" class="tab-btn" data-tab="tab-bank">題庫詞彙管理</button>
         <button type="button" class="tab-btn" data-tab="tab-font">字型與排版</button>
       </div>
@@ -463,6 +469,27 @@
               <div>🔹 <strong>流暢連貫</strong>：速度適中不拖腔，無不當停頓，無重複、回讀或斷續；每停頓卡頓或回讀一次扣 0.5 分。</div>
               <div>🔹 <strong>單題隔離</strong>：每題扣完為止（最低 0 分），絕不倒扣到下一題分數。</div>
             </div>
+          </div>
+        </div>
+
+        <!-- 分頁：雲端即時同步 -->
+        <div class="tab-pane" id="tab-cloud">
+          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px; margin-bottom: 14px; font-size: 0.88rem; color: #166534; line-height: 1.5;">
+            <strong>🚀 全球線上即時同步功能：</strong><br>
+            配置 Firebase Realtime Database 後，大螢幕播放的當前選手進度與 AI 辨識扣分，將即時同步給所有線上評審與主辦單位總表。
+          </div>
+
+          <div class="form-group">
+            <label for="cfgFirebaseConfig">Firebase 連線設定 (JSON 或 SDK 宣告)：</label>
+            <textarea id="cfgFirebaseConfig" class="form-control" rows="6" placeholder='請貼上 Firebase 設定代碼，例如：&#10;{&#10;  "apiKey": "AIzaSy...",&#10;  "authDomain": "my-app.firebaseapp.com",&#10;  "databaseURL": "https://my-app-default-rtdb.firebaseio.com",&#10;  "projectId": "my-app"&#10;}'></textarea>
+            <span class="hint">💡 貼上 <code>const firebaseConfig = { ... };</code> 或純 JSON 皆可。設定將保存在本機瀏覽器。</span>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 12px; align-items: center; flex-wrap: wrap;">
+            <button type="button" class="nav-btn primary" id="btnSaveFirebaseConfigPlayer">💾 儲存並啟用雲端</button>
+            <button type="button" class="nav-btn" id="btnTestFirebasePlayer">⚡ 測試連線</button>
+            <button type="button" class="nav-btn" id="btnClearFirebasePlayer" style="color: #c53030;">斷開連線</button>
+            <span id="playerCloudStatusText" style="margin-left: auto; font-size: 0.88rem; font-weight: 600; color: #64748b;">本機離線模式</span>
           </div>
         </div>
 
@@ -572,6 +599,9 @@
   <!-- 浮動訊息 Toast -->
   <div class="toast-msg" id="toastMsg">設定已儲存</div>
 
+  <!-- Firebase Web SDK (Compat 模式，支援純靜態網頁與離線快取) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
   <!-- 載入官方預設題庫資料 (含 2024 Level 1 ~ 4，共 465 題) -->
   <script src="default_bank.js"></script>
   <!-- 核心主程式邏輯 -->

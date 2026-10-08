@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>識字比賽 - 現場評審與主辦單位評分系統</title>
+  <link rel="stylesheet" href="scoring.css">
+  <!-- Firebase Web SDK (Compat 模式，支援純前端靜態與離線無縫降級) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+</head>
+<body>
+
+  <!-- ================= 頂部全域導覽列 ================= -->
+  <header class="global-header">
+    <div class="brand-area">
+      <span class="brand-badge">2026 TACSFL</span>
+      <h1>識字比賽評分與決策系統</h1>
+    </div>
+
+    <div class="header-user-status">
+      <!-- 雲端即時同步狀態燈 -->
+      <div class="cloud-conn-pill" id="cloudConnPill" title="點擊設定 Firebase 雲端即時連線">
+        <span class="conn-dot offline" id="connDot"></span>
+        <span id="connStatusText">本機離線模式</span>
+        <button type="button" class="btn-cloud-settings" id="btnOpenFirebaseModal">⚡ 雲端設定</button>
+      </div>
+
+      <!-- 當前登入身份標籤 -->
+      <div class="user-role-pill" id="userRoleBadge">
+        <span>👤</span> <span id="userRoleText">未登入</span>
+      </div>
+
+      <!-- 切換身份 / 登出 -->
+      <button type="button" class="btn-header" id="btnSwitchRole" style="display: none;" title="切換其他評審或登出">
+        <span>🔄</span> 切換身份
+      </button>
+
+      <!-- 返回比賽播放器按鈕 -->
+      <a href="index.html" class="btn-header primary" title="回到比賽字詞播放畫面">
+        <span>📺</span> 比賽播放器
+      </a>
+    </div>
+  </header>
+
+  <!-- ================= 主應用容器 ================= -->
+  <main class="main-wrapper">
+
+    <!-- ================= 1. 登入視圖 (Auth View) ================= -->
+    <section class="auth-container" id="authView">
+      <div class="auth-header-hero">
+        <h2>🏆 識字比賽 評分系統登入</h2>
+        <p>現場多位評審獨立評分 ‧ AI 語音雙盲比對 ‧ 主辦單位即時統計總表</p>
+      </div>
+
+      <div class="auth-tabs-nav">
+        <button type="button" class="auth-tab-btn active" data-tab="tab-judge-login">
+          <span>🧑‍⚖️</span> 現場評審登入
+        </button>
+        <button type="button" class="auth-tab-btn" data-tab="tab-org-login">
+          <span>👑</span> 主辦單位 / 裁判長登入
+        </button>
+      </div>
+
+      <!-- 現場評審登入分頁 -->
+      <div class="auth-tab-pane active" id="tab-judge-login">
+        <p style="font-size: 0.95rem; color: var(--gray-600); margin-bottom: 16px;">
+          請選擇或輸入您的評審身份，每位評審的給分將獨立記錄並即時匯整：
+        </p>
+
+        <!-- 快速選擇評審卡片 -->
+        <div class="judge-card-picker" id="judgePickerList">
+          <div class="judge-card-opt selected" data-judge-id="judge1" data-judge-name="評審 1 (王老師)">
+            <div class="judge-avatar">👨‍🏫</div>
+            <div class="judge-title">評審 1</div>
+            <div class="judge-sub">王老師</div>
+          </div>
+          <div class="judge-card-opt" data-judge-id="judge2" data-judge-name="評審 2 (林老師)">
+            <div class="judge-avatar">👩‍🏫</div>
+            <div class="judge-title">評審 2</div>
+            <div class="judge-sub">林老師</div>
+          </div>
+          <div class="judge-card-opt" data-judge-id="judge3" data-judge-name="評審 3 (陳老師)">
+            <div class="judge-avatar">👨‍🏫</div>
+            <div class="judge-title">評審 3</div>
+            <div class="judge-sub">陳老師</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="customJudgeNameInput">自訂評審老師姓名（選填）：</label>
+          <input type="text" id="customJudgeNameInput" class="form-control" placeholder="例：張審查長、李教授">
+        </div>
+
+        <button type="button" class="btn-block-action" id="btnEnterJudgeSystem">
+          <span>🧑‍⚖️</span> 進入評審打分介面
+        </button>
+      </div>
+
+      <!-- 主辦單位登入分頁 -->
+      <div class="auth-tab-pane" id="tab-org-login">
+        <p style="font-size: 0.95rem; color: var(--gray-600); margin-bottom: 16px;">
+          主辦單位登入後可即時監看全場評審打分進度、切換 AI 計分權重、查閱最終名次排行榜：
+        </p>
+
+        <div class="form-group">
+          <label for="orgPasswordInput">主辦單位管理密碼：</label>
+          <input type="password" id="orgPasswordInput" class="form-control" placeholder="請輸入管理密碼">
+        </div>
+
+        <button type="button" class="btn-block-action organizer" id="btnEnterOrganizerSystem">
+          <span>👑</span> 進入主辦單位計分總表
+        </button>
+      </div>
+    </section>
+
+
+    <!-- ================= 2. 現場評審工作台視圖 (Judge Workspace) ================= -->
+    <section class="judge-workspace" id="judgeWorkspaceView" style="display: none;">
+      
+      <!-- 頂部控制列：Level 切換與學生快捷橫軸 -->
+      <div class="judge-top-controls">
+        <div class="level-switcher-group">
+          <span class="level-tag-label">競賽級別：</span>
+          <button type="button" class="level-btn active" data-level="level1">第一級 (Level 1)</button>
+          <button type="button" class="level-btn" data-level="level2">第二級 (Level 2)</button>
+          <button type="button" class="level-btn" data-level="level3">第三級 (Level 3)</button>
+          <button type="button" class="level-btn" data-level="level4">第四級 (Level 4)</button>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <input type="text" id="studentSearchInput" class="form-control" style="width: 160px; padding: 6px 10px; font-size: 0.85rem;" placeholder="🔍 搜尋編號/姓名...">
+          <span id="levelProgressText" style="font-size: 0.85rem; font-weight: 700; color: var(--primary);">已評 0 / 5</span>
+        </div>
+
+        <!-- 學生橫向快速選單 -->
+        <div class="student-quick-strip" id="studentQuickStrip">
+          <!-- 動態生成選手小標籤 -->
+        </div>
+
+        <!-- 大螢幕即時連動跟隨列 -->
+        <div class="live-player-sync-bar" id="livePlayerSyncBar" style="display: none; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--radius-sm); padding: 8px 14px; width: 100%; align-items: center; justify-content: space-between; margin-top: 4px;">
+          <div style="font-size: 0.88rem; color: #1e40af; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+            <span>📺 大螢幕現正進行：</span>
+            <strong id="livePlayerSyncName">選手</strong>
+            <span id="livePlayerSyncLevel" style="background: #dbeafe; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">Level 1</span>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <label style="font-size: 0.85rem; cursor: pointer; color: #1e3a8a; display: flex; align-items: center; gap: 4px;">
+              <input type="checkbox" id="checkAutoFollow" checked>
+              <span>自動跟隨大螢幕</span>
+            </label>
+            <button type="button" class="btn-header primary" id="btnSwitchToPlayerStudent" style="padding: 4px 10px; font-size: 0.8rem;">
+              👉 立即切換
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 核心評分區域：兩欄佈局 -->
+      <div class="judge-scoring-grid">
+
+        <!-- 左欄：學生核對與評審初評卡片 -->
+        <div class="student-scoring-card">
+          <!-- 學生核對 Banner -->
+          <div class="student-identity-banner">
+            <div class="student-info-left">
+              <div class="student-num-box">
+                <div class="num-label">編號</div>
+                <div class="num-value" id="currentStudentNum">#01</div>
+              </div>
+              <div class="student-details">
+                <h2 id="currentStudentName">林小美</h2>
+                <div class="meta">
+                  <span id="currentStudentLevelTag">第一級 (Level 1)</span>
+                  <span id="currentStudentSchoolTag">中文學校 二年甲班</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 上一位 / 下一位導覽按鈕 -->
+            <div class="student-nav-arrows">
+              <button type="button" class="nav-arrow-btn" id="btnPrevStudent">
+                <span>◀</span> 上一位
+              </button>
+              <button type="button" class="nav-arrow-btn" id="btnNextStudent">
+                下一位 <span>▶</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 評分模式切換 Tab (三大向度 vs 50題快速扣分) -->
+          <div style="display: flex; gap: 8px; border-bottom: 2px solid var(--gray-200); padding-bottom: 8px;">
+            <button type="button" class="score-mode-pill-btn active" id="btnModeRubrics" style="padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid var(--primary); background: var(--primary); color: #fff; font-size: 0.85rem; font-weight: 700; cursor: pointer;">
+              📝 三大向度標準評分 (50/30/20)
+            </button>
+            <button type="button" class="score-mode-pill-btn" id="btnModeDeduction" style="padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid var(--gray-300); background: #fff; color: var(--gray-700); font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+              🎯 50題每字2分 快速抓錯扣分法
+            </button>
+          </div>
+
+          <!-- 模式 B：50題每字2分 快速抓錯面板 (預設隱藏) -->
+          <div id="quickDeductionPanel" style="display: none; background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--radius); padding: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <span style="font-weight: 700; color: #92400e; font-size: 0.9rem;">🎯 50 題現場即時抓錯扣分（滿分 100 分，起始滿分）：</span>
+              <button type="button" class="btn-header" id="btnResetDeduct" style="padding: 2px 8px; font-size: 0.75rem;">重設為 100 分</button>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <button type="button" id="btnDeductWrongWord" style="padding: 14px; background: #fee2e2; border: 2px solid #ef4444; border-radius: var(--radius); color: #b91c1c; font-weight: 800; font-size: 1rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                <span>❌ 讀錯 / 漏讀 (-2.0 分)</span>
+                <span id="countWrongWords" style="font-size: 0.8rem; font-weight: 600;">已累計扣 0 次</span>
+              </button>
+              <button type="button" id="btnDeductFluency" style="padding: 14px; background: #fef3c7; border: 2px solid #f59e0b; border-radius: var(--radius); color: #b45309; font-weight: 800; font-size: 1rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                <span>⏳ 卡頓 / 遲疑 (-1.0 分)</span>
+                <span id="countFluencyDeduct" style="font-size: 0.8rem; font-weight: 600;">已累計扣 0 次</span>
+              </button>
+            </div>
+            <div style="font-size: 0.8rem; color: #78350f; margin-top: 8px;">
+              💡 提示：評審只需注視台上選手，朗讀中按鍵自動扣分；比賽結束後可直接比對 AI 抓出的錯詞清單！
+            </div>
+          </div>
+
+          <!-- 模式 A：三大向度評分欄位容器 -->
+          <div id="standardRubricsContainer">
+            <!-- 評分細項標題 -->
+            <div class="scoring-rubrics-title">
+              <h3><span>📝</span> 現場評審各項給分（請依項目評分）</h3>
+              <span style="font-size: 0.82rem; color: var(--gray-600); font-weight: 600;">滿分 100 分制</span>
+            </div>
+
+          <!-- 評分欄位 1：發音準確度 (50分) -->
+          <div class="rubric-item" id="rubricItemPronunciation" data-key="pronunciation" data-max="50">
+            <div class="rubric-header">
+              <div class="rubric-title-wrap">
+                <span class="rubric-name">1. 發音準確度</span>
+                <span class="rubric-max-badge">滿分 50 分</span>
+              </div>
+              <div class="rubric-score-display" id="dispScorePronunciation">--</div>
+            </div>
+            <div class="rubric-desc">
+              字音、聲母、韻母、聲調正確無誤；變調、輕聲朗讀自然準確。
+            </div>
+            <div class="rubric-input-row">
+              <div class="quick-score-chips">
+                <button type="button" class="score-chip-btn" data-val="50">滿分 (50)</button>
+                <button type="button" class="score-chip-btn" data-val="48">-2 (48)</button>
+                <button type="button" class="score-chip-btn" data-val="45">-5 (45)</button>
+                <button type="button" class="score-chip-btn" data-val="40">-10 (40)</button>
+                <button type="button" class="score-chip-btn" data-val="35">-15 (35)</button>
+              </div>
+              <input type="number" class="score-input-number" id="inputScorePronunciation" min="0" max="50" step="0.5" placeholder="分數">
+            </div>
+            <div class="rubric-error-msg" id="errScorePronunciation">⚠️ 請輸入發音準確度分數 (0~50)</div>
+          </div>
+
+          <!-- 評分欄位 2：流暢連貫度 (30分) -->
+          <div class="rubric-item" id="rubricItemFluency" data-key="fluency" data-max="30">
+            <div class="rubric-header">
+              <div class="rubric-title-wrap">
+                <span class="rubric-name">2. 流暢連貫度</span>
+                <span class="rubric-max-badge">滿分 30 分</span>
+              </div>
+              <div class="rubric-score-display" id="dispScoreFluency">--</div>
+            </div>
+            <div class="rubric-desc">
+              速度適中不拖腔，無不當停頓，無重複、回讀或口吃斷續。
+            </div>
+            <div class="rubric-input-row">
+              <div class="quick-score-chips">
+                <button type="button" class="score-chip-btn" data-val="30">滿分 (30)</button>
+                <button type="button" class="score-chip-btn" data-val="28">-2 (28)</button>
+                <button type="button" class="score-chip-btn" data-val="25">-5 (25)</button>
+                <button type="button" class="score-chip-btn" data-val="20">-10 (20)</button>
+                <button type="button" class="score-chip-btn" data-val="15">-15 (15)</button>
+              </div>
+              <input type="number" class="score-input-number" id="inputScoreFluency" min="0" max="30" step="0.5" placeholder="分數">
+            </div>
+            <div class="rubric-error-msg" id="errScoreFluency">⚠️ 請輸入流暢連貫度分數 (0~30)</div>
+          </div>
+
+          <!-- 評分欄位 3：認字反應與儀態表現 (20分) -->
+          <div class="rubric-item" id="rubricItemDemeanor" data-key="demeanor" data-max="20">
+            <div class="rubric-header">
+              <div class="rubric-title-wrap">
+                <span class="rubric-name">3. 認字反應與儀態</span>
+                <span class="rubric-max-badge">滿分 20 分</span>
+              </div>
+              <div class="rubric-score-display" id="dispScoreDemeanor">--</div>
+            </div>
+            <div class="rubric-desc">
+              認字敏捷、專注認真，端莊大方、自信沉著。
+            </div>
+            <div class="rubric-input-row">
+              <div class="quick-score-chips">
+                <button type="button" class="score-chip-btn" data-val="20">滿分 (20)</button>
+                <button type="button" class="score-chip-btn" data-val="19">-1 (19)</button>
+                <button type="button" class="score-chip-btn" data-val="18">-2 (18)</button>
+                <button type="button" class="score-chip-btn" data-val="16">-4 (16)</button>
+                <button type="button" class="score-chip-btn" data-val="14">-6 (14)</button>
+              </div>
+              <input type="number" class="score-input-number" id="inputScoreDemeanor" min="0" max="20" step="0.5" placeholder="分數">
+            </div>
+            <div class="rubric-error-msg" id="errScoreDemeanor">⚠️ 請輸入認字反應與儀態分數 (0~20)</div>
+          </div>
+
+          <!-- 評審總分小計 -->
+          <div class="scoring-total-bar">
+            <div class="total-bar-label">
+              <span>評審個人給分總計：</span>
+              <span id="judgeRevisionStatus" style="font-size: 0.8rem; font-weight: 600; color: #15803d; margin-left: 8px;"></span>
+            </div>
+            <div class="total-bar-score" id="dispTotalJudgeScore">0.0 分</div>
+          </div>
+
+          <!-- 評審評語備註 (選填) -->
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="inputJudgeComment">評審老師評語與備註（選填）：</label>
+            <textarea id="inputJudgeComment" class="form-comment" rows="2" placeholder="可填寫學生表現亮點或特定字詞建議..."></textarea>
+          </div>
+
+          <!-- 初評儲存與 AI 解鎖按鈕區 -->
+          <div class="human-action-bar">
+            <button type="button" class="btn-save-initial" id="btnSaveInitialScore">
+              <span id="saveInitialBtnIcon">💾</span>
+              <span id="saveInitialBtnText">完成初評並比對 AI 評分</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+
+        <!-- 右欄：AI 雙盲比對與修改決策卡片 -->
+        <div class="ai-comparison-card">
+          <div class="ai-card-header">
+            <div class="ai-card-title">
+              <span>🤖</span> AI 多模態語音評分報告
+            </div>
+            <span class="ai-model-tag" id="aiModelBadge">Gemini 3.5 Flash 音訊分析</span>
+          </div>
+
+          <!-- 雙盲未解鎖遮蔽層 -->
+          <div class="ai-locked-overlay" id="aiLockedOverlay">
+            <div class="ai-lock-icon">🔒</div>
+            <h4>AI 評分已隱藏 (雙盲機制)</h4>
+            <p>為保障現場評審獨立與客觀性，請先完成左側各欄位初評並點擊「完成初評並比對 AI 評分」以解鎖比對。</p>
+            <div class="ai-unlock-hint">💡 完成初評後，您可以參照 AI 扣分分析並決定是否修改分數</div>
+          </div>
+
+          <!-- 解鎖後 AI 詳細面板 -->
+          <div class="ai-unlocked-content" id="aiUnlockedContent">
+            <!-- AI 總分英雄卡 -->
+            <div class="ai-score-hero">
+              <div>
+                <div style="font-size: 0.85rem; font-weight: 700; color: var(--ai-purple);">AI 系統客觀評分</div>
+                <div class="ai-score-big">
+                  <span class="num" id="aiHeroScoreVal">94.0</span>
+                  <span class="max">/ 100 分</span>
+                </div>
+              </div>
+              <div id="aiHeroBadge" style="background: #fff; padding: 6px 12px; border-radius: 9999px; font-weight: 700; font-size: 0.85rem; border: 1px solid var(--ai-border); color: var(--ai-purple);">
+                🏆 特優評級
+              </div>
+            </div>
+
+            <!-- AI 分項統計 -->
+            <div class="ai-subscores-grid">
+              <div class="ai-sub-card">
+                <div class="sub-title">發音準確扣分</div>
+                <div class="sub-val" id="aiSubPronDeduct" style="color: #dc2626;">-4.0 分</div>
+              </div>
+              <div class="ai-sub-card">
+                <div class="sub-title">語流卡頓扣分</div>
+                <div class="sub-val" id="aiSubFluDeduct" style="color: #d97706;">-2.0 分</div>
+              </div>
+            </div>
+
+            <!-- AI 診斷與讀錯詞彙列表 -->
+            <div class="ai-analysis-box">
+              <h5>🎯 AI 辨識糾音診斷：</h5>
+              <div id="aiSummaryAnalysisText" style="line-height: 1.5; font-size: 0.85rem;">
+                學生大部分字詞認讀清晰流暢；於少數較難詞彙出現短暫猶豫。
+              </div>
+              <div class="ai-error-tag-list" id="aiDeductionTags">
+                <!-- 動態注入扣分詞彙標籤 -->
+              </div>
+            </div>
+
+            <!-- 評審修改決策區 -->
+            <div class="judge-revision-panel">
+              <div class="revision-header">
+                <span>⚖️</span> 評審老師決策：是否修改您的初評？
+              </div>
+              <div class="revision-actions">
+                <button type="button" class="btn-keep-original" id="btnKeepScore">
+                  <span>✅</span> 維持原評分（不修改），確認送出
+                </button>
+                <button type="button" class="btn-modify-score" id="btnModifyScore">
+                  <span>✏️</span> 參考 AI 意見，修改我的評分
+                </button>
+                <button type="button" class="btn-next-student-direct" id="btnDirectNextStudent">
+                  <span>⏭</span> 儲存並評分下一位選手
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ================= 3. 主辦單位總表視圖 (Organizer Dashboard) ================= -->
+    <section class="organizer-dashboard" id="organizerDashboardView" style="display: none;">
+      
+      <!-- 主辦單位頂部工具卡 -->
+      <div class="organizer-control-card">
+        <div class="org-card-top-row">
+          <div class="org-card-title">
+            <h2>👑 主辦單位 ‧ 全體參賽者成績總表與排名</h2>
+            <p>即時匯總所有現場評審老師評分 ‧ 動態調整 AI 計分權重</p>
+          </div>
+
+          <!-- 核心開關：是否不納入 AI 評分切換器 -->
+          <div class="ai-inclusion-toggle-box">
+            <div>
+              <div class="toggle-info-title">
+                <span>🤖</span> AI 計分權重控制
+              </div>
+              <div class="toggle-info-desc" id="toggleAiFormulaDesc">
+                目前規則：全體現場評審平均 + AI 算 1 位評審 <code>(Σ評審 + AI) / (N+1)</code>
+              </div>
+            </div>
+
+            <label class="switch-label">
+              <input type="checkbox" id="checkExcludeAiScore" class="switch-checkbox">
+              <span class="switch-state-text" id="toggleAiSwitchText">不納入 AI 評分</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 快速過濾與操作列 -->
+        <div class="org-filter-actions">
+          <div class="org-filter-group">
+            <label style="font-weight: 700; font-size: 0.9rem;">級別篩選：</label>
+            <select id="orgFilterLevel" class="form-control" style="width: 160px; padding: 6px 10px;">
+              <option value="all">全部級別</option>
+              <option value="level1" selected>第一級 (Level 1)</option>
+              <option value="level2">第二級 (Level 2)</option>
+              <option value="level3">第三級 (Level 3)</option>
+              <option value="level4">第四級 (Level 4)</option>
+            </select>
+
+            <input type="text" id="orgSearchInput" class="form-control" style="width: 180px; padding: 6px 10px;" placeholder="🔍 搜尋參賽者...">
+          </div>
+
+          <div class="org-btn-group">
+            <button type="button" class="btn-header" id="btnExportCsv">
+              <span>📥</span> 匯出成績 CSV
+            </button>
+            <button type="button" class="btn-header" id="btnPrintScores">
+              <span>🖨️</span> 列印榜單
+            </button>
+            <button type="button" class="btn-header" id="btnManageJudges">
+              <span>🧑‍⚖️</span> 管理評審名單
+            </button>
+            <button type="button" class="btn-header" id="btnChangeAdminPwd" title="修改主辦單位登入密碼">
+              <span>🔑</span> 修改主辦密碼
+            </button>
+            <button type="button" class="btn-header primary" id="btnManageStudents">
+              <span>👥</span> 管理參賽者名單
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 全場大表 (Score Matrix Table) -->
+      <div class="table-card">
+        <div class="table-responsive">
+          <table class="score-matrix-table" id="matrixTable">
+            <thead id="matrixTableHead">
+              <!-- 動態生成表頭（依評審名單動態調整） -->
+            </thead>
+            <tbody id="matrixTableBody">
+              <!-- 動態生成全場分數列表 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- ================= 4. 防漏填提醒彈窗 (Alert Modal) ================= -->
+  <div class="modal-alert-backdrop" id="missingFieldModal">
+    <div class="modal-alert-dialog">
+      <div class="alert-icon-ring">⚠️</div>
+      <h3>評分欄位尚未填寫完整！</h3>
+      <p id="missingFieldMsgText">
+        評審老師您好，您尚未填寫 <span class="missing-field-tag" id="missingFieldNameTag">流暢連貫度</span> 的分數。<br>
+        為維護評分公平性與選手權益，請完整填寫各欄位後，再切換至下一位選手。
+      </p>
+      <div class="alert-dialog-actions">
+        <button type="button" class="btn-alert-fill" id="btnCloseAlertAndFocus">
+          前往補填分數
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ================= 5. 參賽名單管理視窗 (Organizer Contestant Modal) ================= -->
+  <div class="modal-alert-backdrop" id="contestantManagerModal">
+    <div class="modal-alert-dialog" style="max-width: 680px; text-align: left;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--gray-200); padding-bottom: 8px;">
+        <h3 style="margin: 0;">👥 參賽者選手名單管理</h3>
+        <button type="button" class="btn-header" id="btnCloseManagerModal">✕ 關閉</button>
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--gray-200); padding-bottom: 6px;">
+        <button type="button" class="btn-header primary" id="tabManagerSingle">➕ 單筆新增</button>
+        <button type="button" class="btn-header" id="tabManagerBatch">📋 Excel / CSV 批次貼上匯入</button>
+        <button type="button" class="btn-header" id="btnDownloadTemplateCsv" style="margin-left: auto;">📤 下載 CSV 範本</button>
+      </div>
+
+      <!-- 單筆新增區塊 -->
+      <div id="panelManagerSingle">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+          <input type="text" id="newStudentNum" class="form-control" placeholder="編號 (例: 06)">
+          <input type="text" id="newStudentName" class="form-control" placeholder="姓名 (例: 王小明)">
+          <select id="newStudentLevel" class="form-control">
+            <option value="level1">第一級 Level 1</option>
+            <option value="level2">第二級 Level 2</option>
+            <option value="level3">第三級 Level 3</option>
+            <option value="level4">第四級 Level 4</option>
+          </select>
+        </div>
+        <button type="button" class="btn-block-action" id="btnAddStudentBtn" style="padding: 8px; margin-bottom: 16px;">
+          ➕ 新增參賽學生
+        </button>
+      </div>
+
+      <!-- 批次貼上匯入區塊 -->
+      <div id="panelManagerBatch" style="display: none; margin-bottom: 16px;">
+        <div style="font-size: 0.85rem; color: var(--gray-700); margin-bottom: 6px;">
+          請直接從 Excel 複製表格貼在下方（每行一位選手，支援以逗點或 Tab 分隔，例如：<code>06, 王小明, level1, 中文學校</code>）：
+        </div>
+        <textarea id="batchStudentTextarea" class="form-control" rows="5" placeholder="06, 王小明, level1, 中文學校&#10;07, 李大同, level2, 華語學苑&#10;08, 張美麗, level3, 僑民小學"></textarea>
+        <button type="button" class="btn-block-action organizer" id="btnProcessBatchImport" style="padding: 8px; margin-top: 8px;">
+          📥 執行批次匯入
+        </button>
+      </div>
+
+      <div style="max-height: 260px; overflow-y: auto; border: 1px solid var(--gray-200); border-radius: var(--radius-sm); padding: 8px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--gray-300);">
+              <th style="padding: 6px;">編號</th>
+              <th style="padding: 6px;">姓名</th>
+              <th style="padding: 6px;">級別</th>
+              <th style="padding: 6px; text-align: center;">操作</th>
+            </tr>
+          </thead>
+          <tbody id="managerStudentTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 6. 評審名單管理視窗 (Organizer Judge Manager Modal) ================= -->
+  <div class="modal-alert-backdrop" id="judgeManagerModal">
+    <div class="modal-alert-dialog" style="max-width: 680px; text-align: left;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--gray-200); padding-bottom: 8px;">
+        <h3 style="margin: 0;">🧑‍⚖️ 現場評審名單管理</h3>
+        <button type="button" class="btn-header" id="btnCloseJudgeManagerModal">✕ 關閉</button>
+      </div>
+
+      <p style="font-size: 0.88rem; color: var(--gray-600); margin-bottom: 14px;">
+        主辦單位可在此新增、修改或移除評審老師。登入畫面與大表計分欄位將即時動態更新！
+      </p>
+
+      <!-- 新增評審表單 -->
+      <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+        <select id="newJudgeAvatar" class="form-control" style="width: 75px; font-size: 1.2rem; text-align: center; padding: 6px;">
+          <option value="👨‍🏫">👨‍🏫</option>
+          <option value="👩‍🏫">👩‍🏫</option>
+          <option value="🧑‍⚖️">🧑‍⚖️</option>
+          <option value="🎓">🎓</option>
+          <option value="👑">👑</option>
+        </select>
+        <input type="text" id="newJudgeName" class="form-control" placeholder="評審名稱 (例: 評審 4 (何老師)、張審查長)">
+        <button type="button" class="btn-block-action" id="btnAddJudgeBtn" style="width: 140px; padding: 8px; white-space: nowrap;">
+          ➕ 新增評審
+        </button>
+      </div>
+
+      <!-- 目前評審清單 -->
+      <div style="max-height: 280px; overflow-y: auto; border: 1px solid var(--gray-200); border-radius: var(--radius-sm); padding: 8px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--gray-300);">
+              <th style="padding: 6px; width: 60px; text-align: center;">圖示</th>
+              <th style="padding: 6px;">評審名稱</th>
+              <th style="padding: 6px; width: 120px;">評分進度</th>
+              <th style="padding: 6px; text-align: center; width: 120px;">操作</th>
+            </tr>
+          </thead>
+          <tbody id="managerJudgeTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 7. Firebase 雲端即時連線設定視窗 ================= -->
+  <div class="modal-alert-backdrop" id="firebaseConfigModal">
+    <div class="modal-alert-dialog" style="max-width: 660px; text-align: left;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--gray-200); padding-bottom: 8px;">
+        <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+          <span>🔥</span> Firebase Realtime 雲端即時同步設定
+        </h3>
+        <button type="button" class="btn-header" id="btnCloseFirebaseModal">✕ 關閉</button>
+      </div>
+
+      <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-sm); padding: 12px; margin-bottom: 14px; font-size: 0.88rem; color: #166534; line-height: 1.5;">
+        <strong>🚀 全球線上即時同步功能：</strong><br>
+        配置 Firebase Realtime Database 後，線上評審、大螢幕與主辦總表將跨越不同家用網路進行<b>毫秒級即時同步</b>（大螢幕跳題評審秒翻頁、打分秒進主辦總表）。
+      </div>
+
+      <div class="form-group">
+        <label for="firebaseConfigInput" style="font-weight: 700;">請貼上 Firebase 設定代碼 (JSON 或 SDK 宣告)：</label>
+        <textarea id="firebaseConfigInput" class="form-control" rows="7" placeholder='例如貼上從 Firebase 控制台複製的代碼：&#10;{&#10;  "apiKey": "AIzaSy...",&#10;  "authDomain": "my-app.firebaseapp.com",&#10;  "databaseURL": "https://my-app-default-rtdb.firebaseio.com",&#10;  "projectId": "my-app"&#10;}'></textarea>
+        <span style="font-size: 0.8rem; color: var(--gray-600); margin-top: 4px; display: block;">
+          💡 貼上 <code>const firebaseConfig = { ... };</code> 或純 JSON 格式皆可自動辨識。資料保存在您本機瀏覽器。
+        </span>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+        <button type="button" class="btn-block-action organizer" id="btnSaveFirebaseConfig" style="flex: 1; padding: 10px;">
+          💾 儲存並啟用雲端同步
+        </button>
+        <button type="button" class="btn-header" id="btnTestFirebaseConn" style="padding: 10px 16px;">
+          ⚡ 測試連線
+        </button>
+        <button type="button" class="btn-header" id="btnClearFirebaseConfig" style="color: #dc2626; padding: 10px 14px;">
+          斷開連線
+        </button>
+      </div>
+
+      <!-- 快速指引摺疊 -->
+      <details style="font-size: 0.83rem; color: var(--gray-600); background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: var(--radius-sm); padding: 10px;">
+        <summary style="font-weight: 700; cursor: pointer; color: var(--gray-800);">📖 如何在 1 分鐘內免費取得 Firebase 設定代碼？</summary>
+        <ol style="margin-left: 20px; margin-top: 8px; line-height: 1.6;">
+          <li>使用一般 Google 帳號登入 <a href="https://console.firebase.google.com/" target="_blank" style="color: #2563eb;">Firebase Console</a>。</li>
+          <li>點擊「新增專案」，輸入專案名稱（例：<code>chinese-vocab-comp</code>）。</li>
+          <li>在左側選單點擊「Build」➔「Realtime Database」➔「建立資料庫」，位置選預設，安全性規則選擇「以測試模式啟動 (Test Mode)」。</li>
+          <li>點擊專案首頁齒輪圖示「專案設定」➔ 在下方「您的應用程式」點擊網頁圖示 <code>&lt;/&gt;</code> 註冊應用程式。</li>
+          <li>複製畫面中顯示的 <code>firebaseConfig</code> 物件內容，貼入上方文字框並點擊「儲存」即可！</li>
+        </ol>
+      </details>
+    </div>
+  </div>
+
+  <!-- 浮動 Toast 提示 -->
+  <div class="scoring-toast" id="scoringToast">評分已成功送出</div>
+
+  <!-- 載入核心評分邏輯程式碼 -->
+  <script src="scoring.js"></script>
+</body>
+</html>
