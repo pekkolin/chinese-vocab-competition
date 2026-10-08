@@ -249,6 +249,7 @@
     btnExportCsv: document.getElementById('btnExportCsv'),
     btnPrintScores: document.getElementById('btnPrintScores'),
     btnChangeAdminPwd: document.getElementById('btnChangeAdminPwd'),
+    btnCopyJudgeShareLink: document.getElementById('btnCopyJudgeShareLink'),
     btnManageStudents: document.getElementById('btnManageStudents'),
     matrixTableBody: document.getElementById('matrixTableBody'),
     thAiScoreHeader: document.getElementById('thAiScoreHeader'),
@@ -315,6 +316,7 @@
     btnSaveFirebaseConfig: document.getElementById('btnSaveFirebaseConfig'),
     btnTestFirebaseConn: document.getElementById('btnTestFirebaseConn'),
     btnClearFirebaseConfig: document.getElementById('btnClearFirebaseConfig'),
+    btnModalCopyJudgeLink: document.getElementById('btnModalCopyJudgeLink'),
 
     // Toast
     scoringToast: document.getElementById('scoringToast')
@@ -394,8 +396,115 @@
     return null;
   }
 
+  function encodeConfigToHash(config) {
+    try {
+      const minConfig = {
+        apiKey: config.apiKey || '',
+        authDomain: config.authDomain || '',
+        databaseURL: config.databaseURL || '',
+        projectId: config.projectId || ''
+      };
+      if (config.storageBucket) minConfig.storageBucket = config.storageBucket;
+      if (config.messagingSenderId) minConfig.messagingSenderId = config.messagingSenderId;
+      if (config.appId) minConfig.appId = config.appId;
+      const jsonStr = JSON.stringify(minConfig);
+      return btoa(encodeURIComponent(jsonStr));
+    } catch (e) {
+      console.warn('encodeConfigToHash failed:', e);
+      return '';
+    }
+  }
+
+  function decodeConfigFromHash(encodedStr) {
+    try {
+      if (!encodedStr) return null;
+      const raw = decodeURIComponent(atob(decodeURIComponent(encodedStr)));
+      return JSON.parse(raw);
+    } catch (e) {
+      console.warn('decodeConfigFromHash failed:', e);
+      return null;
+    }
+  }
+
+  function copyJudgeShareLink() {
+    let config = null;
+    const rawInput = (dom.firebaseConfigInput ? dom.firebaseConfigInput.value : '').trim();
+    if (rawInput) {
+      config = parseFirebaseConfigString(rawInput);
+    }
+    if (!config) {
+      const savedConfigStr = localStorage.getItem(FIREBASE_CONFIG_KEY);
+      if (savedConfigStr) {
+        config = parseFirebaseConfigString(savedConfigStr);
+      }
+    }
+
+    if (!config || (!config.apiKey && !config.databaseURL && !config.projectId)) {
+      alert('⚠️ 尚未完成 Firebase 雲端設定！\n請先在「連線設定」中貼上 Firebase 專案設定並測試成功後，再複製評審專屬連結。');
+      openFirebaseModal();
+      return;
+    }
+
+    if (!config.databaseURL && config.projectId) {
+      config.databaseURL = `https://${config.projectId}-default-rtdb.firebaseio.com`;
+    }
+
+    const hashToken = encodeConfigToHash(config);
+    if (!hashToken) {
+      alert('⚠️ 設定編碼失敗，請確認設定內容是否正確。');
+      return;
+    }
+
+    const baseUrl = window.location.href.split('#')[0].split('?')[0];
+    const shareUrl = baseUrl + '#fb=' + hashToken;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        showToast('📋 已複製評審專屬免設定連結！');
+        alert('🎉 評審專屬免設定連結已複製到剪貼簿！\n\n您可以將此網址發送給評審老師（例如透過 LINE、微信或 Email）：\n評審老師在手機點開此連結時，系統會「自動完成雲端連線」，完全不需要老師手動填寫任何金鑰或設定！');
+      }).catch(() => {
+        prompt('請複製以下評審專屬連結傳給評審老師：\n（老師點開即可自動連線雲端）', shareUrl);
+      });
+    } else {
+      prompt('請複製以下評審專屬連結傳給評審老師：\n（老師點開即可自動連線雲端）', shareUrl);
+    }
+  }
+
   function initFirebaseFromStorage() {
     try {
+      // 1. 優先檢查網址列是否含有評審免設定參數 (#fb=... 或 ?fb=...)
+      let urlConfig = null;
+      const hash = window.location.hash || '';
+      if (hash.includes('fb=')) {
+        const m = hash.match(/fb=([^&]+)/);
+        if (m && m[1]) urlConfig = decodeConfigFromHash(m[1]);
+      }
+      if (!urlConfig && window.location.search) {
+        const p = new URLSearchParams(window.location.search);
+        const fbVal = p.get('fb');
+        if (fbVal) urlConfig = decodeConfigFromHash(fbVal);
+      }
+
+      if (urlConfig) {
+        if (!urlConfig.databaseURL && urlConfig.projectId) {
+          urlConfig.databaseURL = `https://${urlConfig.projectId}-default-rtdb.firebaseio.com`;
+        }
+        localStorage.setItem(FIREBASE_CONFIG_KEY, JSON.stringify(urlConfig, null, 2));
+        if (window.history && window.history.replaceState) {
+          const cleanUrl = window.location.pathname + (window.location.search ? window.location.search.replace(/[?&]fb=[^&]+/, '').replace(/^&/, '?') : '');
+          window.history.replaceState(null, '', cleanUrl || window.location.pathname);
+        }
+        if (dom.firebaseConfigInput) {
+          dom.firebaseConfigInput.value = JSON.stringify(urlConfig, null, 2);
+        }
+        setupFirebase(urlConfig, false);
+        setTimeout(() => {
+          showToast('🎉 已透過專屬連結自動啟用雲端同步！');
+        }, 500);
+        return;
+      }
+
+      // 2. 本地儲存載入既有設定
       const savedConfigStr = localStorage.getItem(FIREBASE_CONFIG_KEY);
       if (savedConfigStr) {
         const config = parseFirebaseConfigString(savedConfigStr);
@@ -2060,6 +2169,9 @@
     if (dom.btnChangeAdminPwd) {
       dom.btnChangeAdminPwd.addEventListener('click', handleChangeAdminPassword);
     }
+    if (dom.btnCopyJudgeShareLink) {
+      dom.btnCopyJudgeShareLink.addEventListener('click', copyJudgeShareLink);
+    }
     dom.btnManageStudents.addEventListener('click', openContestantManager);
 
     // 關閉選手管理視窗
@@ -2098,6 +2210,9 @@
     }
     if (dom.btnClearFirebaseConfig) {
       dom.btnClearFirebaseConfig.addEventListener('click', handleClearFirebaseConfig);
+    }
+    if (dom.btnModalCopyJudgeLink) {
+      dom.btnModalCopyJudgeLink.addEventListener('click', copyJudgeShareLink);
     }
 
     // 防漏填彈窗關閉並自動聚焦

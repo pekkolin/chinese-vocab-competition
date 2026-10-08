@@ -1457,25 +1457,409 @@ body {
   opacity: 1;
 }
 
-/* 響應式微調 */
+/* ==========================================================================
+   手機與行動裝置專屬觸控優化 (Mobile & Touch Optimization)
+   ========================================================================== */
 @media (max-width: 768px) {
+  /* 防止 iOS 輸入時畫面強制縮放 (Safari Zoom Bug) */
+  input, select, textarea, button {
+    font-size: 16px;
+    touch-action: manipulation;
+  }
+
+  /* 主容器間距微調，最大化利用手機可視區域 */
+  .main-wrapper {
+    padding: 10px 8px;
+  }
+
+  /* 頂部導覽列：精簡高度與內距，防止溢出與堆疊 */
   .global-header {
-    padding: 0 16px;
+    height: auto;
+    min-height: 52px;
+    padding: 8px 12px;
+    flex-wrap: wrap;
+    gap: 8px;
   }
+
+  .brand-area {
+    gap: 6px;
+  }
+
   .brand-area h1 {
-    font-size: 1rem;
+    font-size: 0.95rem;
+    white-space: nowrap;
   }
-  .student-identity-banner {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+
+  .brand-badge {
+    font-size: 0.7rem;
+    padding: 2px 6px;
   }
-  .student-nav-arrows {
+
+  .header-user-status {
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  /* 雲端連線膠囊：在手機上簡化長文字，保留呼吸燈與設定按鈕 */
+  .cloud-conn-pill {
+    padding: 4px 8px;
+    font-size: 0.76rem;
+  }
+  #connStatusText {
+    display: none;
+  }
+
+  .user-role-pill {
+    padding: 4px 8px;
+    font-size: 0.76rem;
+  }
+
+  .btn-header {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    min-height: 36px;
+  }
+
+  /* 登入介面優化 */
+  .auth-container {
+    margin: 10px auto;
+    border-radius: var(--radius);
+  }
+
+  .auth-header-hero {
+    padding: 20px 14px;
+    text-align: center;
+  }
+
+  .auth-header-hero h2 {
+    font-size: 1.25rem;
+  }
+
+  .auth-header-hero p {
+    font-size: 0.82rem;
+  }
+
+  .auth-tabs-nav {
+    display: flex;
+  }
+
+  .auth-tab-btn {
+    padding: 12px 8px;
+    font-size: 0.88rem;
+  }
+
+  .auth-tab-pane {
+    padding: 18px 12px;
+  }
+
+  /* 評審卡片選單：手機改為 3 欄並列，大頭貼與名字直覺好按 */
+  .judge-card-picker {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .judge-card-opt {
+    padding: 10px 4px;
+  }
+
+  .judge-card-opt .judge-avatar {
+    font-size: 1.6rem;
+    margin-bottom: 2px;
+  }
+
+  .judge-card-opt .judge-title {
+    font-size: 0.88rem;
+  }
+
+  .judge-card-opt .judge-sub {
+    font-size: 0.75rem;
+  }
+
+  /* 評審頂部操控列 */
+  .judge-top-controls {
+    padding: 12px 10px;
+    gap: 10px;
+    border-radius: var(--radius);
+  }
+
+  .level-switcher-group {
     width: 100%;
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    gap: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .level-tag-label {
+    display: none;
+  }
+
+  .level-btn {
+    flex: 1;
+    min-width: 68px;
+    padding: 8px 4px;
+    font-size: 0.82rem;
+    text-align: center;
+    white-space: nowrap;
+    min-height: 40px;
+  }
+
+  /* 選手搜尋與進度 */
+  .judge-top-controls > div:nth-child(2) {
+    width: 100%;
+    display: flex;
     justify-content: space-between;
   }
+
+  #studentSearchInput {
+    flex: 1;
+    max-width: none !important;
+    height: 40px;
+    font-size: 0.9rem;
+  }
+
+  /* 大螢幕跟隨列 */
+  .live-player-sync-bar {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 8px;
+    padding: 10px 12px !important;
+  }
+
+  .live-player-sync-bar > div:last-child {
+    justify-content: space-between;
+  }
+
+  /* 核心評分區域 */
+  .judge-scoring-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .student-scoring-card {
+    padding: 14px 10px;
+    gap: 14px;
+    border-radius: var(--radius);
+  }
+
+  /* 學生身份 Banner：手機縱向配置但緊湊 */
+  .student-identity-banner {
+    padding: 12px 10px;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .student-info-left {
+    width: 100%;
+    gap: 12px;
+  }
+
+  .student-num-box {
+    padding: 6px 12px;
+  }
+
+  .student-num-box .num-value {
+    font-size: 1.5rem;
+  }
+
+  .student-details h2 {
+    font-size: 1.6rem;
+  }
+
+  .student-details .meta {
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.82rem;
+  }
+
+  /* 上一位 / 下一位：加大為滿版大按鈕，大拇指極易點擊 */
+  .student-nav-arrows {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .nav-arrow-btn {
+    height: 44px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+  }
+
+  /* 評分模式 Tab：兩按鈕等寬填滿，文字不折疊 */
+  .score-mode-tabs {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6px !important;
+  }
+
+  .score-mode-pill-btn {
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 4px !important;
+    font-size: 0.8rem !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  /* 50 題現場快速抓錯扣分面板：加大按鍵，防止按偏 */
+  #quickDeductionPanel {
+    padding: 12px 10px !important;
+  }
+
+  #quickDeductionPanel > div:nth-child(2) {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  #btnDeductWrongWord, #btnDeductFluency {
+    padding: 16px 6px !important;
+    min-height: 80px;
+    font-size: 0.95rem !important;
+    border-radius: var(--radius) !important;
+    touch-action: manipulation;
+  }
+
+  #btnDeductWrongWord span:first-child, #btnDeductFluency span:first-child {
+    font-size: 0.95rem;
+    font-weight: 800;
+  }
+
+  /* 評分向度項目：加大給分 Chip 觸控範圍 */
+  .rubric-item {
+    padding: 14px 10px;
+  }
+
+  .rubric-header {
+    margin-bottom: 6px;
+  }
+
+  .rubric-desc {
+    font-size: 0.8rem;
+    margin-bottom: 10px;
+  }
+
   .rubric-input-row {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch !important;
+    gap: 10px;
+  }
+
+  /* 快捷評分 Chip：手機上採用 5 欄等寬網格，加大至 44px 高度 */
+  .quick-score-chips {
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 5px !important;
+    width: 100%;
+  }
+
+  .score-chip-btn {
+    min-height: 44px !important;
+    padding: 8px 2px !important;
+    font-size: 0.9rem !important;
+    font-weight: 700 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm) !important;
+    touch-action: manipulation;
+  }
+
+  /* 分數輸入框：手機上滿版高對比 */
+  .score-input-number {
+    width: 100% !important;
+    height: 44px !important;
+    font-size: 1.25rem !important;
+    font-weight: 800 !important;
+    border-radius: var(--radius-sm);
+  }
+
+  /* 總計條與初評按鈕 */
+  .scoring-total-bar {
+    padding: 14px 12px;
+  }
+
+  .total-bar-score {
+    font-size: 1.45rem;
+  }
+
+  .btn-save-initial {
+    min-height: 50px;
+    font-size: 1.05rem;
+  }
+
+  /* AI 雙盲比對卡片與決策按鈕 */
+  .ai-comparison-card {
+    padding: 14px 10px;
+    border-radius: var(--radius);
+  }
+
+  .ai-locked-overlay {
+    padding: 24px 16px;
+  }
+
+  .revision-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .btn-keep-original, .btn-modify-score, .btn-next-student-direct {
+    min-height: 48px;
+    font-size: 0.92rem;
+    font-weight: 700;
+  }
+
+  /* 主辦單位總表手機適配 */
+  .organizer-control-card {
+    padding: 12px 10px;
+  }
+
+  .org-card-top-row {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 12px;
+  }
+
+  .ai-inclusion-toggle-box {
+    width: 100%;
+  }
+
+  .org-filter-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .org-filter-group {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .org-filter-group select, #orgSearchInput {
+    width: 100% !important;
+    height: 42px;
+  }
+
+  .org-btn-group {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .org-btn-group .btn-header {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+    font-size: 0.8rem;
+    padding: 6px 4px;
   }
 }

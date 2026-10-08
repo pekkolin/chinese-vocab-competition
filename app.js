@@ -314,8 +314,52 @@
     return null;
   }
 
+  function decodeConfigFromHash(encodedStr) {
+    try {
+      if (!encodedStr) return null;
+      const raw = decodeURIComponent(atob(decodeURIComponent(encodedStr)));
+      return JSON.parse(raw);
+    } catch (e) {
+      console.warn('decodeConfigFromHash failed:', e);
+      return null;
+    }
+  }
+
   function initFirebaseInPlayer() {
     try {
+      // 1. 優先檢查網址列是否含有免設定參數 (#fb=... 或 ?fb=...)
+      let urlConfig = null;
+      const hash = window.location.hash || '';
+      if (hash.includes('fb=')) {
+        const m = hash.match(/fb=([^&]+)/);
+        if (m && m[1]) urlConfig = decodeConfigFromHash(m[1]);
+      }
+      if (!urlConfig && window.location.search) {
+        const p = new URLSearchParams(window.location.search);
+        const fbVal = p.get('fb');
+        if (fbVal) urlConfig = decodeConfigFromHash(fbVal);
+      }
+
+      if (urlConfig) {
+        if (!urlConfig.databaseURL && urlConfig.projectId) {
+          urlConfig.databaseURL = `https://${urlConfig.projectId}-default-rtdb.firebaseio.com`;
+        }
+        localStorage.setItem(FIREBASE_CONFIG_KEY, JSON.stringify(urlConfig, null, 2));
+        if (window.history && window.history.replaceState) {
+          const cleanUrl = window.location.pathname + (window.location.search ? window.location.search.replace(/[?&]fb=[^&]+/, '').replace(/^&/, '?') : '');
+          window.history.replaceState(null, '', cleanUrl || window.location.pathname);
+        }
+        if (dom.cfgFirebaseConfig) {
+          dom.cfgFirebaseConfig.value = JSON.stringify(urlConfig, null, 2);
+        }
+        setupFirebaseInPlayer(urlConfig, false);
+        setTimeout(() => {
+          showToast('🎉 播放器已自動啟用雲端同步！');
+        }, 500);
+        return;
+      }
+
+      // 2. 本地儲存載入既有設定
       const savedConfigStr = localStorage.getItem(FIREBASE_CONFIG_KEY);
       if (savedConfigStr) {
         const config = parseFirebaseConfigString(savedConfigStr);

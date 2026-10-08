@@ -190,7 +190,7 @@
           </div>
 
           <!-- 評分模式切換 Tab (三大向度 vs 50題快速扣分) -->
-          <div style="display: flex; gap: 8px; border-bottom: 2px solid var(--gray-200); padding-bottom: 8px;">
+          <div class="score-mode-tabs" style="display: flex; gap: 8px; border-bottom: 2px solid var(--gray-200); padding-bottom: 8px;">
             <button type="button" class="score-mode-pill-btn active" id="btnModeRubrics" style="padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid var(--primary); background: var(--primary); color: #fff; font-size: 0.85rem; font-weight: 700; cursor: pointer;">
               📝 三大向度標準評分 (50/30/20)
             </button>
@@ -466,6 +466,9 @@
             <button type="button" class="btn-header" id="btnChangeAdminPwd" title="修改主辦單位登入密碼">
               <span>🔑</span> 修改主辦密碼
             </button>
+            <button type="button" class="btn-header" id="btnCopyJudgeShareLink" title="複製包含雲端連線設定的評審專屬網址，傳給老師直接連線">
+              <span>🔗</span> 複製評審專屬連結
+            </button>
             <button type="button" class="btn-header primary" id="btnManageStudents">
               <span>👥</span> 管理參賽者名單
             </button>
@@ -635,7 +638,7 @@
         </span>
       </div>
 
-      <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+      <div style="display: flex; gap: 10px; margin-bottom: 12px;">
         <button type="button" class="btn-block-action organizer" id="btnSaveFirebaseConfig" style="flex: 1; padding: 10px;">
           💾 儲存並啟用雲端同步
         </button>
@@ -646,6 +649,10 @@
           斷開連線
         </button>
       </div>
+
+      <button type="button" class="btn-header" id="btnModalCopyJudgeLink" style="width: 100%; margin-bottom: 16px; background: #e0f2fe; color: #0369a1; border-color: #bae6fd; font-weight: 600; padding: 10px; justify-content: center;">
+        <span>🔗</span> 複製評審專屬免設定連結（傳給評審手機一鍵連線）
+      </button>
 
       <!-- 快速指引摺疊 -->
       <details style="font-size: 0.83rem; color: var(--gray-600); background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: var(--radius-sm); padding: 10px;">
